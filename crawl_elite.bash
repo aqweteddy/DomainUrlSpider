@@ -1,0 +1,2 @@
+trafilatura --explore  "https://acg.gamer.com.tw/anime/" --json -o output/acg.gamer.com.tw --parallel 8 > acg.gamer.com.tw.txt
+# trafilatura --explore "https://www.eslite.com/" --json -o eslite.com > eslite1.txt --parallel 8
