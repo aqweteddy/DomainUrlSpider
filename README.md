@@ -39,6 +39,13 @@ python client.py --cli_id cli1
 * aiohttp 實踐異步爬蟲
 * main content analyze
 
+## Bash
+
+* Clean javascript render pages.
+```bash
+cat *.jsonl | egrep -iv "javascript" > tmp.jsonl
+```
+
 ## TODO
 
 [] database
