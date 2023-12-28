@@ -234,21 +234,12 @@ if __name__ == '__main__':
 
     resp = requests.get(urljoin(args.server,
                                 f'/register/{args.cli_id}')).json()
+    domains = requests.get(urljoin(args.server,
+                                '/get-allowed-domain')).json()['domains']
     print(resp)
+    print(domains)
     crawler = Crawler(pipelines=[PipelineMainContent()],
-                      allow_domain=[
-                                    # 'www.taiwannews.com.tw', 
-                                    # 'english.ftvnews.com.tw', 
-                                    # 'icrt.com.tw',
-                                    # 'eslite.com',
-                                    'gov.tw',
-                                    'gov.taipei',
-                                    # 'eslitecorp.com'
-                                    # 'features.ltn.com.tw/english',
-                                    # 'www.taipeitimes.com',
-                                    # 'gnn.gamer.com.tw',
-                                    # 'acg.gamer.com.tw'
-                                    ],
+                      allow_domain=domains,
                       max_thread=args.num_threads,
                       max_concurrent_request=args.max_concurrent_req
                     )

@@ -2,8 +2,8 @@ from typing import List, Dict
 import heapq
 from utils.cms import CountMinSketch
 from utils.function import get_domain
-from bloom_filter2 import BloomFilter
 import jsonlines, os
+from rbloom import Bloom
 
 
 class UrlItem:
@@ -62,7 +62,8 @@ class ServerController:
         self.db_url: str = db_url
         self.clients_que: Dict[str, ClientQueue] = {}
         self.init_urls = init_urls
-        self.bf = BloomFilter(max_elements=10**8, error_rate=0.01)
+        #self.bf = BloomFilter(max_elements=10**8, error_rate=0.01)
+        self.bf = Bloom(100_000_000, 0.01)
         self.tmp_result = []
         self.crawled_num = 0
         self.num_files = 1
@@ -89,9 +90,9 @@ class ServerController:
 
     def add_urls(self, urls: List[str]):
         for url in urls:
-            if url not in self.bf:
-                self.bf.add(url)
-            
+            if url in self.bf:
+                continue
+            self.bf.add(url)
             domain = get_domain(url)
             min_val, min_cli = float('inf'), ''
             for cli_id, cli in self.clients_que.items():

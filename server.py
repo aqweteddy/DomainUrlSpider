@@ -3,21 +3,13 @@ import time
 from fastapi import FastAPI
 from pydantic import BaseModel
 from server_controller import ServerController
+from urllib.parse import urlparse
 
 app = FastAPI()
-SEEDS_URLS = [
-    'https://www.ey.gov.tw/Page/61E6295406231218/',
-    'https://www.president.gov.tw/Page/106',
-    'https://www.gov.taipei/default.aspx',
-    'https://www.dorts.gov.taipei',
-    'https://www.gov.tw/',
-    'https://www.k12ea.gov.tw/',
-    'https://www.moi.gov.tw/',
-    'https://www.ndc.gov.tw/',
-    'https://www.hl.gov.tw/',
-    'https://english.gov.taipei/',
-    'https://tuic.gov.taipei/zh'
-]
+
+with open('url.txt', 'r') as f:
+    SEEDS_URLS = [line.strip() for line in f.readlines()]
+print(SEEDS_URLS)
 
 controller = ServerController(SEEDS_URLS, "")
 start_time = time.time()
@@ -40,7 +32,14 @@ def register_client(cli_id: str):
     except KeyError as e:
         return {"status": "error", "message": str(e)}
 
+@app.get('/get-allowed-domain')
+def get_allowed_domain():
+    domains = []
+    for url in SEEDS_URLS:
+        domains.append(urlparse(url).netloc.replace('www.', ''))
+    return {"status": "ok", "domains": domains}
 
+    
 @app.get("/fetchurls/{cli_id}")  # client fetch url
 def fetch_url(cli_id: str, num: int):
     try:
@@ -59,17 +58,17 @@ def client_num():
 def url_in_queue():
     num = sum(map(lambda x: len(x), controller.clients_que.values()))
     return {
-        "status": "ok",
-        "nums": num
-    }
+            "status": "ok",
+            "nums": num
+            }
 
 @app.get('/crawled-url-num')  # numbers of urls in queue
 def crawled_url_num():
     return {
-        "status": "ok",
-        "nums": controller.crawled_num,
-        "times": time.time() - start_time
-    }
+            "status": "ok",
+            "nums": controller.crawled_num,
+            "times": time.time() - start_time
+            }
 
 @app.post('/save/')  # save crawled webpage
 async def save(pages: CrawledPages):
@@ -85,6 +84,6 @@ async def save_queue():
     tot_que = []
     for v in controller.clients_que.values():
         tot_que += [a.url for a in v.url_queue] + [a.url for a in v.cold_queue]
-    
+
     with open('queue.cache', 'w') as f:
         f.write('\n'.join(tot_que))
